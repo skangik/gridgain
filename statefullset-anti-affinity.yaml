@@ -1,0 +1,97 @@
+apiVersion: apps/v1 
+kind: StatefulSet 
+metadata:
+  name: gridgain-cluster-poc
+  namespace: gridgain
+spec:
+  replicas: 3
+  serviceName: gridgain
+  selector:
+    matchLabels:
+      app: gridgain
+  template:
+    metadata:
+      labels:
+        app: gridgain 
+    spec:
+      serviceAccountName: gridgain 
+      terminationGracePeriodSeconds: 60000 
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - gridgain
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: gridgain-node
+        image: gridgain/community:8.9.2
+        env:
+        - name: OPTION_LIBS
+          value: ignite-kubernetes,ignite-rest-http
+        - name: CONFIG_URI
+          value: file:///opt/gridgain/config/node-configuration.xml
+        - name: JVM_OPTS
+          value: "-DIGNITE_WAL_MMAP=false -DIGNITE_WAIT_FOR_BACKUPS_ON_SHUTDOWN=true"
+        ports:
+        - containerPort: 47100
+        - containerPort: 47500
+        - containerPort: 49112
+        - containerPort: 10800
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /opt/gridgain/config
+          name: config-vol
+        - mountPath: /opt/gridgain/work
+          name: work-vol
+        - mountPath: /opt/gridgain/wal
+          name: wal-vol
+        - mountPath: /opt/gridgain/walarchive
+          name: walarchive-vol
+        readinessProbe:
+          httpGet:
+            path: /ignite?cmd=probe
+            port: 8080
+          initialDelaySeconds: 5
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /ignite?cmd=version
+            port: 8080
+          initialDelaySeconds: 5
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+      securityContext:
+        fsGroup: 2000
+      volumes:
+      - name: config-vol
+        configMap:
+          name: gridgain-config
+  volumeClaimTemplates:
+  - metadata:
+      name: work-vol
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "1Gi"
+  - metadata:
+      name: wal-vol
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "1Gi" 
+  - metadata:
+      name: walarchive-vol
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "1Gi"
