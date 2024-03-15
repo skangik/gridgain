@@ -1,0 +1,14 @@
+kubectl create namespace gridgain
+kubectl create -f service.yaml
+kubectl create sa gridgain -n gridgain
+kubectl create -f cluster-role.yaml
+kubectl create configmap gridgain-config -n gridgain --from-file=node-configuration.xml
+kubectl create configmap gridgain-license -n gridgain --from-file=gridgain-license.xml
+kubectl create -f statefulset.yaml
+kubectl get pods -n gridgain
+kubectl exec -it <pod_name> -n gridgain -- /bin/bash
+kubectl describe svc gridgain-service -n gridgain
+curl http://13.86.186.145:8080/ignite?cmd=version
+{"successStatus":0,"error":null,"response":"8.9.2","sessionToken":null}
+
+-----------------------------------------------
