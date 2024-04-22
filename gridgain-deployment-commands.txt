@@ -11,5 +11,10 @@ kubectl describe svc gridgain-service -n gridgain
 kubectl scale sts  gridgain-cluster --replicas=3 -n gridgain
 curl http://13.86.186.145:8080/ignite?cmd=version
 {"successStatus":0,"error":null,"response":"8.9.2","sessionToken":null}
+http://34.147.221.245:8080/ignite?cmd=version
+http://34.147.221.245:8080/ignite?cmd=activate
+http://34.147.244.88:8888/ignite?cmd=put&key=1&val="Hello_World!"&cacheName=myCache
+http://34.147.244.88:8888/ignite?cmd=get&key=1&cacheName=myCache
+
 
 -----------------------------------------------
