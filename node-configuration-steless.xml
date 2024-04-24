@@ -11,11 +11,27 @@
             <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
                 <property name="ipFinder">
                     <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder">
-                        <property name="namespace" value="gridgain"/>
-                        <property name="serviceName" value="gridgain-service"/>
+                        <property name="namespace" value="gridgaincluster"/>
+                        <property name="serviceName" value="gridgaincluster-service"/>
                     </bean>
                 </property>
             </bean>
         </property>
+
+         <!-- Configure caches -->
+        <property name="cacheConfiguration">
+            <list>
+                <!-- Example of replicated cache configuration -->
+                <bean class="org.apache.ignite.configuration.CacheConfiguration">
+                    <!-- Cache name -->
+                    <property name="name" value="myReplicatedCache"/>
+                    <!-- Cache mode: REPLICATED -->
+                    <property name="cacheMode" value="REPLICATED"/>
+                    <!-- Optional: number of backups -->
+                    <property name="backups" value="3"/>
+                </bean>
+            </list>
+        </property>
+        
     </bean>
 </beans>
